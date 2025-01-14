@@ -7,6 +7,7 @@ export default function Index() {
   const [knownWords, setKnownWords] = useState<string[]>([]);
   const [currentWordIndex, setCurrentWordIndex] = useState(0);
   const [showTranslation, setShowTranslation] = useState(false);
+  const [filteredWords, setFilteredWords] = useState<[string, string][]>([]);
 
   useEffect(() => {
     const fetchKnownWords = async () => {
@@ -15,7 +16,11 @@ export default function Index() {
         return isKnown ? polishWord : null;
       });
       const knownWordsResults = await Promise.all(knownWordsPromises);
-      setKnownWords(knownWordsResults.filter(Boolean) as string[]);
+      const knownWordsList = knownWordsResults.filter(Boolean) as string[];
+      setKnownWords(knownWordsList);
+
+      const filtered = Object.entries(list_polish).filter(([polishWord]) => !knownWordsList.includes(polishWord));
+      setFilteredWords(filtered);
     };
 
     fetchKnownWords();
@@ -24,6 +29,7 @@ export default function Index() {
   const handleMarkAsKnown = async (polishWord: string) => {
     await setKnownWord(polishWord);
     setKnownWords([...knownWords, polishWord]);
+    setFilteredWords(filteredWords.filter(([word]) => word !== polishWord));
     setCurrentWordIndex(currentWordIndex + 1);
     setShowTranslation(false);
   };
@@ -37,8 +43,7 @@ export default function Index() {
     setShowTranslation(true);
   };
 
-  const words = Object.entries(list_polish);
-  const currentWord = words[currentWordIndex];
+  const currentWord = filteredWords[currentWordIndex];
 
   if (!currentWord) {
     return (
@@ -67,13 +72,9 @@ export default function Index() {
       <Text>{polishWord}</Text>
       {showTranslation && <Text>{englishWord}</Text>}
       {!showTranslation && <Button title="Show Translation" onPress={handleShowTranslation} />}
-      {knownWords.includes(polishWord) ? (
-        <Text>Known</Text>
-      ) : (
-        <Button title="Mark as Known" onPress={() => handleMarkAsKnown(polishWord)} />
-      )}
+      <Button title="Mark as Known" onPress={() => handleMarkAsKnown(polishWord)} />
       <Button title="Next" onPress={handleNextWord} />
-      <Text>Known: {knownWords.length}/{words.length}</Text>
+      <Text>Known: {knownWords.length}/{Object.keys(list_polish).length}</Text>
     </View>
   );
 }
