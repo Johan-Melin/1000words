@@ -6,6 +6,7 @@ import list_polish from '../assets/word-lists/polish.json';
 export default function Index() {
   const [knownWords, setKnownWords] = useState<string[]>([]);
   const [currentWordIndex, setCurrentWordIndex] = useState(0);
+  const [showTranslation, setShowTranslation] = useState(false);
 
   useEffect(() => {
     const fetchKnownWords = async () => {
@@ -24,10 +25,16 @@ export default function Index() {
     await setKnownWord(polishWord);
     setKnownWords([...knownWords, polishWord]);
     setCurrentWordIndex(currentWordIndex + 1);
+    setShowTranslation(false);
   };
 
   const handleNextWord = () => {
     setCurrentWordIndex(currentWordIndex + 1);
+    setShowTranslation(false);
+  };
+
+  const handleShowTranslation = () => {
+    setShowTranslation(true);
   };
 
   const words = Object.entries(list_polish);
@@ -57,7 +64,9 @@ export default function Index() {
         alignItems: "center",
       }}
     >
-      <Text>{polishWord} - {englishWord}</Text>
+      <Text>{polishWord}</Text>
+      {showTranslation && <Text>{englishWord}</Text>}
+      {!showTranslation && <Button title="Show Translation" onPress={handleShowTranslation} />}
       {knownWords.includes(polishWord) ? (
         <Text>Known</Text>
       ) : (
